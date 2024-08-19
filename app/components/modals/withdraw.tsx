@@ -188,22 +188,22 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
               </div>
               <div className="currency_container p-3">
                 <div className=" flex justify-between mb-4">
-                  <p className="text-paraDarkText text-sm">Available Shares</p>
+                  <p className=" text-sm">Available Shares</p>
                   <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.shareBalance,2)))}</p>
                 </div>
                 <div className=" flex justify-between mb-4">
-                  <p className="text-paraDarkText text-sm">Estimated redemption value</p>
+                  <p className=" text-sm">Estimated redemption value</p>
                   <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.position,2)))}</p>
                 </div>
               </div>
               {!withdrawalEnabled && <p className="text-sm text-bluish font-semibold mt-7">Investor can redeem post maturity {selectedPool.expiration} at 8:00 am GMT</p>}
                 <div className="flex max-sm:flex-col justify-between gap-3 mt-4">
-                  <button className="button1 text-paraDarkText w-1/2 max-sm:w-full py-3">Secondary Market (soon)</button>
-                  <button className="button1 text-paraDarkText w-1/2 max-sm:w-full py-3">Buyback (soon)</button>
+                  <button className="button1 w-1/2 max-sm:w-full py-3">Secondary Market (soon)</button>
+                  <button className="button1 w-1/2 max-sm:w-full py-3">Buyback (soon)</button>
                 </div>
               <button
                className={`mt-4 py-3 w-full flex ${
-                Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled ? "button1 text-paraDarkText hover:bg-transparent" : "proceed"
+                Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled ? "button1 hover:bg-transparent" : "proceed"
               }`}
                 onClick={() => setStep(1)}
                 disabled={Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled}

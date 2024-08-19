@@ -247,7 +247,7 @@ export default function Home() {
                         className={`w-full button2 flex items-center justify-center px-9 py-3 gap-1`}
                         // onClick={() => setOpenState(true)}
                       >
-                        <p className="text-sm">Invest Now</p>
+                        <p className="text-sm">Launch dApp</p>
                         <ChevronRightIcon className="w-[13px] h-[13px]"/>
                       </button>
                     </div>

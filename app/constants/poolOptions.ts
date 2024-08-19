@@ -55,7 +55,7 @@ export const pool: any= [
     img: EthBgWhiteLogo,
     ticker: "ETH",
     reserves: "0",
-    minimum: "100",
+    minimum: "10",
   },
   {
     name: "BTC (Dec-24)",
@@ -91,6 +91,6 @@ export const pool: any= [
     img: EthBgWhiteLogo,
     ticker: "ETH",
     reserves: "0",
-    minimum: "100",
+    minimum: "10",
   },
   ];

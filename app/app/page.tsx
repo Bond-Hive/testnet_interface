@@ -35,6 +35,7 @@ import Loading from "../components/UI-assets/loading";
 import { Tooltip } from "react-tooltip";
 import { getNetworkDetails } from "@stellar/freighter-api";
 import MobileNav from "../components/UI-assets/mobileNav";
+import APYChart from "../components/graph/chart";
 const MainDapp = () => {
   const {setConnectorWalletAddress, connectorWalletAddress, poolReserve, setPoolReserve,transactionsStatus,setSelectedPool, selectedPool,selectedNetwork} = UseStore()
   const [openState, setOpenState] = useState(false)
@@ -128,6 +129,7 @@ const MainDapp = () => {
     const interval = setInterval( async () => {
       const {data} = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields")
       if(data) setLoadingApy(false)
+        // for testing
       setPools((prevPools: any) =>
         prevPools.map((pool: any, index: any) => ({ ...pool, apy: data.data[index].averageYieldPostExecution?.upper }))
       );
@@ -228,6 +230,24 @@ console.log({selectedNetwork})
     }
     getNetwork()
   }, [])
+
+
+   const ETH_APY_DATA: number[] = [
+    0, 2, 5, 8, 2, 16, 8, 30, 30, 35,
+    36, 30, 10, 37, 40, 45, 37, 40, 38, 35, 
+    25, 23, 28, 50, 48, 45, 43,
+    45, 38, 35,
+    54, 40, 60, 80, 78, 76, 74, 72, 70, 68,
+    65, 63, 80,90, 100, 150, 139,170, 140, 180,200
+  ];
+   const BTC_APY_DATA: number[] = [
+    0, 10, 30, 8, 20, 10, 20, 30, 30, 25,
+    36, 30, 25, 50, 40, 45, 37, 40, 38, 35, 
+    25, 23, 28, 50, 48, 45, 43,
+    45, 38, 90,
+    54, 40, 60, 80, 78, 76, 90, 72, 70, 68,
+    65, 63, 80,90, 140, 150, 139,170, 140, 180,200
+  ];
   return (
     <>
     <div className="dapp">
@@ -281,25 +301,10 @@ console.log({selectedNetwork})
                 </div>
               </div>
               <div className="mt-7">
-                <div className="absolute bottom-0  max-sm:hidden">
-                <div className="w-[534px] h-[134px] relative">
-                        <Image
-                          src={DappChart}
-                          layout="fill"
-                          alt=""
-                          className="object-center"
-                          objectFit="cover"
-                          objectPosition="center"
-                        />
-                      </div>
+                <div className="absolute left-0 right-0 bottom-0">
+                <APYChart apyData={ETH_APY_DATA}/>
+
                 </div>
-                <Image
-                  src={MobileDappChart}
-                  width={274}
-                  height={104}
-                  alt="right"
-                  className="absolute bottom-0 max-sm:block hidden"
-                />
               </div>
             </div>
             <div className="btc_avg max-sm:w-6/12 max-sm:h-[184px] w-6/12 h-[136px] card relative overflow-hidden">
@@ -333,25 +338,10 @@ console.log({selectedNetwork})
                 </div> 
               </div>
               <div className="mt-7">
-                <div className="absolute bottom-0  max-sm:hidden">
-                <div className="w-[534px] h-[134px] relative">
-                        <Image
-                          src={DappChart}
-                          layout="fill"
-                          alt=""
-                          className="object-center"
-                          objectFit="cover"
-                          objectPosition="center"
-                        />
-                      </div>
+                                <div className="absolute left-0 right-0 bottom-0">
+                <APYChart apyData={BTC_APY_DATA}/>
+
                 </div>
-                <Image
-                  src={MobileDappChart}
-                  width={274}
-                  height={104}
-                  alt="right"
-                  className="absolute bottom-0 max-sm:block hidden"
-                />
               </div>
             </div>
             {/* <div className="liquid_staking max-sm:h-[184px] w-[538px] w-6/12 card relative overflow-hidden">
@@ -388,7 +378,7 @@ console.log({selectedNetwork})
             <div className="flex gap-2 items-center">
               <h1 className="text-white">Investment pools</h1>
               <p className="text-secText inner-tag shadowBackDrop text-center py-1 px-3 text-[12px]">
-                {pool.length} available{" "}
+                {pool.length} available
               </p>
             </div>
           </div>
@@ -432,7 +422,7 @@ console.log({selectedNetwork})
               </div>
             </div>
             {
-          loadPool && isTestnet ? (
+          isTestnet ? (
             <div className="table_pool_container max-lg:hidden">
               {pools.map((pool: any, index: number) => (
                 <div
@@ -461,6 +451,7 @@ console.log({selectedNetwork})
                   </div>
                   <div className="APY text-blueish  w-3/12">
                     <h1 className="text-[16px] mb-1 ">                      {loadingApy ? <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div> : pool.apy}</h1>
+                    {/* <h1 className="text-[16px] mb-1 ">10.90 (testing)</h1> */}
                     <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
                       {" "}
                       <Image
@@ -494,20 +485,23 @@ console.log({selectedNetwork})
                     <h1 className="text-[16px] mb-2 ">{pool.expiration}</h1>
                   </div>
                   <div className="flex flex-col gap-4 items-cente w-3/12">
+                  { connectorWalletAddress && Number(pool?.shareBalance) > 0 && 
                   <button
-                      className={"button1 px-9 py-[7px] gap-1 hover:bg-transparent cursor-pointer"}
-                      onClick={() => {
-                        setOpenWithdrawState(true)
-                        setSelectedPool(pool)
-                      }}
-                      disabled={!connectorWalletAddress || Number(pool?.shareBalance) <= 0}
-                    >
-                      {
-                        !shareBalance && connectorWalletAddress ? <div className="flex justify-center">
-                          <Loading/>
-                        </div>  :                      <p className="text-sm text-center"> My position</p>
-                      }
-                    </button>
+                  className={"button1 px-9 py-[7px] gap-1 hover:bg-transparent cursor-pointer"}
+                  onClick={() => {
+                    setOpenWithdrawState(true)
+                    setSelectedPool(pool)
+                  }}
+                  disabled={!connectorWalletAddress || Number(pool?.shareBalance) <= 0}
+                >
+                  {
+                    !shareBalance && connectorWalletAddress ? <div className="flex justify-center">
+                      <Loading/>
+                    </div>  :                      <p className="text-sm text-center"> My position</p>
+                  }
+                </button>
+                  }
+
                     <button
                       className={` inline-flex items-center px-[60px] py-[7px] gap-1 mx-auto ${!connectorWalletAddress || !pool.
                         depositEnabled ? "hover:bg-transparent button1": "button2" }`}
@@ -534,6 +528,7 @@ console.log({selectedNetwork})
             </div>
                       ) : <div className="h-80 flex justify-center items-center gap-2"> <Loading/><p className="text-white">Connect your wallet to show pools...</p></div>
                     }
+                    
             {/*Mobile Pool Strategies */}
             {
           loadPool && isTestnet ? (
@@ -611,7 +606,8 @@ console.log({selectedNetwork})
                       </p>
                     </div>
                   </div>
-                  <button
+                  {
+                    connectorWalletAddress && Number(pool?.shareBalance) > 0 && <button
                     className={`w-full button1 flex items-center justify-center px-9 py-3 gap-1 hover:bg-transparent `}
                     onClick={() => {
                       setOpenWithdrawState(true)
@@ -629,6 +625,8 @@ console.log({selectedNetwork})
                       }
 
                   </button>
+                  }
+                  
                   <button
                     className={`w-full mt-3 flex items-center justify-center px-9 py-3 gap-1 ${!connectorWalletAddress || !pool.
                         depositEnabled ? "hover:bg-transparent button1": "button2" }`}

@@ -25,6 +25,7 @@ import { Contract, TransactionBuilder } from "@stellar/stellar-sdk";
 import { ActivateQuote } from "@/app/dataService/dataServices";
 import { floatFigure, formatFigures, formatWithCommas } from "../web3FiguresHelpers";
 import { formatBigIntTimestamp } from "../web3Function/hooks";
+import { ArrowLongLeftIcon } from "@heroicons/react/24/outline";
 const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
   const [depositAmount, setDepositAmount] = useState("");
   const [memo, setMemo] = useState("")
@@ -252,7 +253,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       setNotEnoughBal(false)
     }
 
-    if(Number(depositAmount) != 0 &&  Number(depositAmount) < 100){
+    if(Number(depositAmount) != 0 &&  Number(depositAmount) < Number(selectedPool.minimum)){
       setMinAmountAlert(true)
     }else{
       setMinAmountAlert(false)
@@ -296,7 +297,37 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
     if(quoteStatus === false){
       activate()
     }
-  }, [quoteStatus,quoteActivated, quoteActivationLoading])
+  }, [quoteStatus,quoteActivated, quoteActivationLoading, step])
+
+
+  const maxDeposit = () => {
+    setDepositAmount(userBalance)
+  }
+  const [errorMessage, setErrorMessage] = useState<string | undefined>("");
+  const validateInput = (value: number) => {
+    if(selectedPool.ticker == "BTC"){
+      if(value < 100 || value % 100 !== 0){
+        return "Deposit amount must be a multiple of 100.";
+      } 
+    } else if(selectedPool.ticker == "ETH"){
+      if(value < 10 || value % 10 !== 0){
+        return "Deposit amount must be a multiple of 10.";
+      } 
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDepositAmount(value);
+
+    const numericValue = Number(value);
+    if (value) {
+      const validationError: string | undefined = validateInput(numericValue);
+      setErrorMessage(validationError);
+    } else {
+      setErrorMessage("");
+    }
+  };
   return (
     <>
       <div
@@ -307,7 +338,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
             <div className="modal_content relative w-[550px] max-sm:w-full pb-5 rounded-lg text-[white] border-2 border-borderColor bg-[#1B2132] p-5 max-sm:pb-16">
               <div className="header flex justify-between items-start">
                 <div className="mb-6">
-                  <h1 className="text-lg">Deposit Funds</h1>
+                  <h1 className="text-lg">Deposit Funds - {selectedPool.name}</h1>
                   <p className="text-paraDarkText text-sm">
                   Invest asset for Guaranteed Yields
                   </p>
@@ -325,31 +356,21 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                   />
                 </div>
               </div>
-              {minAmountAlert && <p className="text-red-500 text-sm mb-2">Minimum deposit is $100 USDC</p>}
-              <div className="balance flex justify-be  tween">
-                  <div className="flex items-center gap-1 ">
-                    <div className="flex items-center">
-                    <Image
-                      src={Wallet}
-                      width={17}
-                      height={17}
-                      alt="right"
-                      className=""
-                    />
-                    </div>
-                    <h2 className="text-lg text-paraDarkText">
-                      ${formatWithCommas(userBalance)}
-                    </h2>
-                  </div>
-                  {/* <h2 className="text-[14px] text-paraDarkText">$23,123</h2> */}
-                </div>
+              {minAmountAlert && <p className="text-red-500 text-sm">Minimum deposit is ${`${selectedPool.ticker == "BTC" ? "100" : "10"}`} USDC</p>}
+              {
+                errorMessage && <div className="mb-3">
+                <p className="text-red-500 cursor-pointer text-sm">
+                {errorMessage}
+                </p>
+              </div>
+              }
               <div className="currency_container p-3">
                 <div className=" flex justify-between mb-4">
-                  <p className="text-paraDarkText text-sm">Currency</p>
+                  <p className="text-paraDarkText text-sm">Asset</p>
                   <p className="text-paraDarkText text-sm">Enter Amount</p>
                 </div>
 
-                <div className=" flex justify-between items-center mb-2">
+                <div className=" flex justify-between items-center">
                 <div className="token flex items-center gap-1 px-3 py-2">
                     <Image
                       src={UsdcBgLogo}
@@ -360,32 +381,51 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                     />
                     <h1 className="text-white text-[13px]">USDC</h1>
                   </div>
-                  <div className="">
+                  <div className="relative">
+                  <span className="text-[10px] absolute top-0 right-0 rounded-x shadowBackDrop rounded-bl-lg px-3 py-[2px]" onClick={maxDeposit}>
+                            max
+                          </span>
                     <input
                       type="tel"
                       id="success"
-                      className="bg-transparent  outline-none rounded-r-lg  block text-[34px] text-right max-w-[250px]"
-                      placeholder={formatWithCommas(userBalance)}
+                      className="bg-transparent pt-3  outline-none rounded-r-lg  block text-[34px] text-right max-w-[250px]"
+                      placeholder="0"
                       name="depositAmount"
                       value={depositAmount}
-                      onChange={(e: any) => setDepositAmount(e.target.value)}
+                      onChange={handleChange}
                     />
                   </div>
                   {/* <h1 className="text-[34px]">23,123</h1> */}
                 </div>
-
-                <div className="border-t border-border_pri pt-4">
-                <div className=" flex items-center justify-between">
-                  <p className="text-white text-sm">Estimated Bonds</p>
-                  <p className="text-white text-lg">{floatFigure(calEstimatedBonds(), 3)}</p>
+                <div className="balance flex justify-between">
+                  <div className="flex items-center gap-1 ">
+                    <div className="flex items-center">
+                    <Image
+                      src={Wallet}
+                      width={17}
+                      height={17}
+                      alt="right"
+                      className=""
+                    />
+                    </div>
+                    <h2 className="text-md text-paraDarkText">
+                      ${formatWithCommas(userBalance)}
+                    </h2>
+                  </div>
+                  <h2 className="text-[14px] text-paraDarkText"><small>Min.</small> 100 USDC</h2>
                 </div>
-                <div className=" flex items-center justify-between">
-                  <p className="text-white text-sm">Estimated redemption</p>
-                  <p className="text-white text-lg">{floatFigure((calEstimatedBonds() * 100), 3)}</p>
+                <div className="border-t border-border_pri pt-4 mt-6">
+                <div className=" flex items-center justify-between mb-1">
+                  <p className="text-white text-md">Estimated Bonds</p>
+                  <p className="text-white text-md">{floatFigure(calEstimatedBonds(), 3)}</p>
                 </div>
-                <div className=" flex items-center justify-between mb-4">
-                  <p className="text-white text-sm">Redeemable on</p>
-                  <p className="text-white text-lg">{maturity == 0 ?<Loading/>  : formatBigIntTimestamp(maturity)}</p>
+                <div className=" flex items-center justify-between mb-1 mb-4">
+                  <p className="text-white text-md">Estimated redemption</p>
+                  <p className="text-white text-md">{floatFigure((calEstimatedBonds() * 100), 3)}</p>
+                </div>
+                <div className=" items-center justify-between mb-4">
+                  <p className="text-paraDarkText text-md ">Redeemable on</p>
+                  <p className="text-white text-md">{maturity == 0 ?<Loading/>  : formatBigIntTimestamp(maturity)}</p>
                 </div>
                 </div>
               </div>
@@ -449,6 +489,10 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
 
           {step === 1 && (
             <div className="modal_content relative w-[550px] max-sm:w-full pb-5 rounded-lg text-[white] border-2 border-borderColor bg-[#1B2132] p-5 max-sm:pb-16">
+              <div className="back flex gap-2 mb-3 cursor-pointer" onClick={() => {setStep(0)}}>
+                <ArrowLongLeftIcon className="w-[20px]"/>
+                <p>Back</p>
+              </div>
               <div className="header flex justify-between items-start">
                 <div className="mb-6">
                   <h1 className="text-lg">Deposit Transaction Settings</h1>
