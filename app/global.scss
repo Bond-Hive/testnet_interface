@@ -145,7 +145,11 @@ html {
   box-shadow: 0px -12px 40px 0px rgba(206, 206, 251, 0.06) inset;
   backdrop-filter: blur(8px);
 }
-
+.card1 {
+  background: rgba(206, 213, 251, 0.03);
+  box-shadow: 0px -12px 40px 0px rgba(206, 206, 251, 0.06) inset;
+  backdrop-filter: blur(8px);
+}
 .bg-fallingg {
   background: url("/PNG/falling-light.png") 150px 0px / cover no-repeat;
 
@@ -197,6 +201,13 @@ html {
     -webkit-text-fill-color: transparent;
   }
 }
+.disable_btn{
+  background: transparent;
+  box-shadow: 0px -4px 12px 0px rgba(234, 234, 251, 0.1) inset;
+  border-radius: 6px;
+  border: 1px solid rgba(206, 206, 251, 0.2);
+  color: #44444a;
+}
 .button1 {
   border-radius: 5px;
   background: rgba(206, 206, 251, 0.01);
@@ -214,6 +225,21 @@ html {
   border-radius: 6px;
   background: #602af8;
   transition: 0.2s;
+}
+
+// farm buttons
+.shadow_button {
+  border-radius: 5px;
+  background: rgba(206, 206, 251, 0.01);
+  box-shadow: 0px -7px 12px 0px rgba(234, 234, 251, 0.1) inset;
+  border-radius: 6px;
+  transition: 0.5s;
+  outline: none;
+  :hover {
+    box-shadow: none;
+    background: transparent;
+    transition: 0.5s;
+  }
 }
 .button2 {
   // height: 40px;
@@ -415,7 +441,10 @@ box-shadow: 0px -12px 24px 0px rgba(158, 113, 255, 0.20) inset;
   flex: 1;
   height: 100%;
 }
-
+.text_grey{
+  color: #CECEFB;
+  opacity: 60%;
+}
 
 .skeleton {
 	background-color: #2b1d3a;

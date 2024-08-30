@@ -48,6 +48,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
   const [signedXdr, setSignedXdr] = React.useState("");
   const [txResultXDR, setTxResultXDR] = useState<String | null>(null);
   const [notEnoughBal, setNotEnoughBal] = useState(false);
+  const maturity = selectedPool?.maturityTimeStamp
   const signWithFreighter = async () => {
     setIsSubmitting(true);
 
@@ -138,6 +139,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
   useEffect(() => {
     readContract("available_redemption")
   })
+  // console.log({maturity})
   useEffect(() => {
     if (signedXdr) {
       submit();
@@ -158,6 +160,28 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
       setNotEnoughBal(false);
     }
   }, [depositAmount, userBalance]);
+
+
+
+  const calculateAPY = () => {
+    
+    const bondsHeld = Number(selectedPool?.shareBalance)
+    const amountDeposited = Number(selectedPool?.reserves)
+    const maturityDate: Date = new Date(Number(maturity) * 1000);
+    const currentDate: Date = new Date();
+    const timeDifference: number = maturityDate.getTime() - currentDate.getTime();
+    const daysToMaturity: number = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+
+    const redemptionValue = Number(bondsHeld) * 100;
+    const absoluteReturn = ((redemptionValue / Number(amountDeposited)) - 1) * 100;
+    const annualizedReturn = (365 / daysToMaturity) * absoluteReturn;
+
+    console.log({annualizedReturn,amountDeposited,redemptionValue, absoluteReturn, daysToMaturity})
+    return annualizedReturn;
+};
+
+ const APY = calculateAPY()
   return (
     <>
       <div
@@ -189,21 +213,27 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
               <div className="currency_container p-3">
                 <div className=" flex justify-between mb-4">
                   <p className=" text-sm">Available Shares</p>
-                  <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.shareBalance,2)))}</p>
+                   <div className="flex gap-2 items-center">
+                   <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.shareBalance,2)))}</p>
+
+                   </div>
                 </div>
                 <div className=" flex justify-between mb-4">
                   <p className=" text-sm">Estimated redemption value</p>
                   <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.position,2)))}</p>
                 </div>
               </div>
-              {!withdrawalEnabled && <p className="text-sm text-bluish font-semibold mt-7">Investor can redeem post maturity {selectedPool.expiration} at 8:00 am GMT</p>}
+              <div className="">
+                <button className="button text-sm bg-blue-600 p-1 px-3 rounded-md my-4">Add BOND to wallet</button>
+                </div>
+              {!withdrawalEnabled && <p className="text-sm text-bluish font-semibold ">Investor can redeem post maturity {selectedPool.expiration} at 8:00 am GMT</p>}
                 <div className="flex max-sm:flex-col justify-between gap-3 mt-4">
-                  <button className="button1 w-1/2 max-sm:w-full py-3">Secondary Market (soon)</button>
-                  <button className="button1 w-1/2 max-sm:w-full py-3">Buyback (soon)</button>
+                  <button className=" disable_btn w-1/2 max-sm:w-full py-3">Secondary Market (soon)</button>
+                  <button className=" disable_btn w-1/2 max-sm:w-full py-3">Buyback (soon)</button>
                 </div>
               <button
                className={`mt-4 py-3 w-full flex ${
-                Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled ? "button1 hover:bg-transparent" : "proceed"
+                Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled ? "disable_btn hover:bg-transparent" : "proceed"
               }`}
                 onClick={() => setStep(1)}
                 disabled={Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled}

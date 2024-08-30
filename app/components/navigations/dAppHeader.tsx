@@ -239,7 +239,7 @@ const [networkChange, setNetworkChange] = useState(false)
           width={1152}
           height={380}
           alt="bondhive"
-          className="absolute -top-20 right-10"
+          className="absolute -top-20 right-10 -z-10"
         />
         <Image
           src={LightRay}
@@ -279,6 +279,13 @@ const [networkChange, setNetworkChange] = useState(false)
               <p>Faucet</p>
             </li>
             </Link>
+            <Link href={"/app/farm"}>
+          <li className={`flex items-center gap-2 ${pathName === "/app/farm" ? "text-[#937ED6]" : "text-white"}`}>
+
+          <CircleStackIcon className="w-[20px]"/>
+            <p>Farm</p>
+          </li>
+          </Link>
           </ul>
         </div>
         <div className="flex justify-between items-center md:gap-5 gap-3">

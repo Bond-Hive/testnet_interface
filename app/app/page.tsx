@@ -29,7 +29,7 @@ import { ERRORS } from "../helpers/error";
 import { pool } from "../constants/poolOptions";
 import WithdrawFunds from "../components/modals/withdraw";
 import Link from "next/link";
-import { formatFigures } from "../components/web3FiguresHelpers";
+import { dateFormat, formatFigures } from "../components/web3FiguresHelpers";
 import { GetAPY } from "../dataService/dataServices";
 import Loading from "../components/UI-assets/loading";
 import { Tooltip } from "react-tooltip";
@@ -121,19 +121,26 @@ const MainDapp = () => {
     );
 
     const shareBalance: any = await getShareCont(pool[poolIndex].shareId, txBuilderBalance, provider, connectorWalletAddress);
-    setShareBalance({[poolIndex]:shareBalance})
     return shareBalance
   }
 
   useEffect(() => {
-    const interval = setInterval( async () => {
-      const {data} = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields")
-      if(data) setLoadingApy(false)
-        // for testing
+    const fetchData = async () => {
+      const { data } = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields");
+      if (data) setLoadingApy(false);
+      // for testing
       setPools((prevPools: any) =>
-        prevPools.map((pool: any, index: any) => ({ ...pool, apy: data.data[index].averageYieldPostExecution?.upper }))
+        prevPools.map((pool: any, index: any) => ({
+          ...pool,
+          apy: data.data[index].averageYieldPostExecution?.upper,
+        }))
       );
-    }, 10000);
+    };
+  
+
+    fetchData();
+  
+    const interval = setInterval(fetchData, 10000);
   
     return () => clearInterval(interval);
   }, []);
@@ -144,12 +151,16 @@ console.log({selectedNetwork})
           const updatedPools = await Promise.all(pools.map(async (pool: any, index: number) => {
             const reserves = await getPoolReserve(index)
             const shareBalance = await getShareBalance(index)
-            const maturityDate = await readContract("maturity", index)
+            const maturityDate:string = await readContract("maturity", index)
+
+            // console.log({[`${index}-maturityDate`]: dateFormat(maturityDate)})
             const now = BigInt(Math.floor(Date.now() / 1000))
             return {
               ...pool,
               reserves,
               shareBalance,
+              maturityTimeStamp: maturityDate,
+              expiration: dateFormat(maturityDate),
               position: Number(shareBalance) * 100,
               depositEnabled: BigInt(maturityDate) > now
             }
@@ -248,6 +259,8 @@ console.log({selectedNetwork})
     54, 40, 60, 80, 78, 76, 90, 72, 70, 68,
     65, 63, 80,90, 140, 150, 139,170, 140, 180,200
   ];
+
+  console.log({shareBalance})
   return (
     <>
     <div className="dapp">
@@ -482,7 +495,7 @@ console.log({selectedNetwork})
                     <h1 className="text-[16px] mb-2 ">${formatFigures(pool.reserves,2)}</h1>
                   </div>
                   <div className="maturity text-blueish w-3/12">
-                    <h1 className="text-[16px] mb-2 ">{pool.expiration}</h1>
+                    <h1 className="text-[16px] mb-2 ">{pool.expiration ? pool.expiration : <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>}</h1>
                   </div>
                   <div className="flex flex-col gap-4 items-cente w-3/12">
                   { connectorWalletAddress && Number(pool?.shareBalance) > 0 && 
@@ -495,15 +508,15 @@ console.log({selectedNetwork})
                   disabled={!connectorWalletAddress || Number(pool?.shareBalance) <= 0}
                 >
                   {
-                    !shareBalance && connectorWalletAddress ? <div className="flex justify-center">
-                      <Loading/>
+                    !pool?.shareBalance && connectorWalletAddress ? <div className="flex justify-center">
+                      <Loading/> 
                     </div>  :                      <p className="text-sm text-center"> My position</p>
                   }
                 </button>
                   }
 
                     <button
-                      className={` inline-flex items-center px-[60px] py-[7px] gap-1 mx-auto ${!connectorWalletAddress || !pool.
+                      className={` flex items-center w-full py-[7px] gap-1 justify-center ${!connectorWalletAddress || !pool.
                         depositEnabled ? "hover:bg-transparent button1": "button2" }`}
                       onClick={() => {
                         setOpenState(true)
@@ -514,7 +527,11 @@ console.log({selectedNetwork})
                         id={!pool.
                         depositEnabled ? "depositDisabled" : ''}
                     >
-                      <p className="text-sm">Invest</p>
+                      {
+                        
+                      }
+                      <p className="text-sm ">{pool?.expiration  && !pool.
+                        depositEnabled ? "Maturity reached" : "Invest"}</p>
                       <Image
                         src={chervonRight}
                         width={13}

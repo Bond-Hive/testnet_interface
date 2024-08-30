@@ -20,6 +20,14 @@ export default function MobileNav() {
             <p>Markets</p>
           </li>
           </Link>
+           <Link href={"/app/farm"}>
+          <li className={`flex items-center gap-2 ${pathName === "/app/farm" ? "text-[#937ED6]" : "text-white"}`}>
+
+          <ChartBarIcon className="w-[20px]"/>
+            <p>farm</p>
+          </li>
+          </Link>
+          
         </ul>
       </div>
     );

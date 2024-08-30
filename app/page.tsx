@@ -87,17 +87,27 @@ export default function Home() {
 
   const [pools, setPools] = useState(pool);
   console.log({pools, selectedNetwork})
+
   useEffect(() => {
-    const interval = setInterval( async () => {
-      const {data} = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields")
+    const fetchData = async () => {
+      const { data } = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields");
+
       setPools((prevPools: any) =>
-        prevPools.map((pool: any, index: any) => ({ ...pool, apy: data.data[index].averageYieldPostExecution?.upper }))
+        prevPools.map((pool: any, index: any) => ({
+          ...pool,
+          apy: data.data[index].averageYieldPostExecution?.upper,
+        }))
       );
-    }, 10000);
+    };
+  
+    // Initial fetch
+    fetchData();
+  
+    // Fetch every 10 seconds
+    const interval = setInterval(fetchData, 10000);
   
     return () => clearInterval(interval);
   }, []);
-
   return (
     <>
       {/* <div className="w-full h-10 bg-red-600 md:max-lg:flex hidden max-sm:bg-blue-500 max-sm:flex"></div> */}
