@@ -65,9 +65,9 @@ const FarmPage = () => {
                   <h2>{tab.name}</h2>
                   {tab?.count && (
                     <span
-                      className={`product_button flex justify-center items-center p-[2px] w-6 h-6 gap-2`}
+                      className={`product_button flex justify-center items-center p-[2px] w-6 h-6 gap-2 rounded-full`}
                     >
-                      <p className="text-sm text-gray-400 uppercase">
+                      <p className="text-sm text-gray-400 uppercase ">
                         {tab?.countValue}
                       </p>
                     </span>

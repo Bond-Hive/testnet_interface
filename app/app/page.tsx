@@ -434,8 +434,7 @@ console.log({selectedNetwork})
                 <h2 className="text-[15px]">Actions</h2>
               </div>
             </div>
-            {
-          isTestnet ? (
+
             <div className="table_pool_container max-lg:hidden">
               {pools.map((pool: any, index: number) => (
                 <div
@@ -543,12 +542,9 @@ console.log({selectedNetwork})
                 </div>
               ))}
             </div>
-                      ) : <div className="h-80 flex justify-center items-center gap-2"> <Loading/><p className="text-white">Connect your wallet to show pools...</p></div>
-                    }
                     
             {/*Mobile Pool Strategies */}
-            {
-          loadPool && isTestnet ? (
+
             <div className="table_pool_container_mobile flex-col gap-4 hidden max-lg:flex">
               {pool.map((pool: any, index:number) => (
                 <div
@@ -592,15 +588,15 @@ console.log({selectedNetwork})
                   </div>
                   <div className="text-[16px] py-4">
                     <div className="maturity flex justify-between">
-                      <p className="">Maturity</p>
-                      <p className=" text-paraDarkText">
+                      <p className="">Maturity </p>
+                      <p className="">
                         <span className="text-blueish mr-2 text-right">
-                          {pool.expiration}
+                          {pool?.expiration}
                         </span>
                       </p>
                     </div>
                     <div className="deposit_assets flex justify-between items-center my-4">
-                      <p className="">Deposit assets</p>
+                      <p className="">Deposit assets </p>
                       <div className="Deposit_asset text-blueish  flex flex items-center gap-1">
                         <div className="asset_logo ">
                           <Image
@@ -619,7 +615,7 @@ console.log({selectedNetwork})
                     <div className="min_invest flex justify-between items-center">
                       <p className="">Minimum Inv.</p>
                       <p className=" text-blueish">
-                        $100
+                        ${pool?.minimum}
                       </p>
                     </div>
                   </div>
@@ -662,8 +658,6 @@ console.log({selectedNetwork})
                 </div>
               ))}
             </div>
-            ) : <div className="h-80 justify-center items-center gap-2 hidden max-lg:flex"> <Loading/><p className="text-white">Connect wallet to show pools...</p></div>
-          }
 
           </div>
         </div>

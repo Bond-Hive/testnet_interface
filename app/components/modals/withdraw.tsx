@@ -21,21 +21,29 @@ import { kit } from "../navigations/dAppHeader";
 import { ERRORS } from "@/app/helpers/error";
 import Loading from "../UI-assets/loading";
 import { pool } from "@/app/constants/poolOptions";
-import { Contract, TransactionBuilder } from "@stellar/stellar-sdk";
-import { floatFigure, formatFigures, formatWithCommas } from "../web3FiguresHelpers";
-const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
-  setOpenState
-}) => {
+import {
+  Contract,
+  TransactionBuilder,
+  Asset,
+  Operation,
+  Keypair,
+} from "@stellar/stellar-sdk";
+import {
+  floatFigure,
+  formatFigures,
+  formatWithCommas,
+} from "../web3FiguresHelpers";
+const WithdrawFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
   const [depositAmount, setDepositAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [withdrawalEnabled, setWihdrawalEnabled] = useState(false)
+  const [withdrawalEnabled, setWihdrawalEnabled] = useState(false);
   const {
     connectorWalletAddress,
     userBalance,
     selectedNetwork: currentNetwork,
     setTransactionsStatus,
     selectedPool,
-    selectedNetwork
+    selectedNetwork,
   } = UseStore();
   const provider = getServer(selectedNetwork);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -48,7 +56,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
   const [signedXdr, setSignedXdr] = React.useState("");
   const [txResultXDR, setTxResultXDR] = useState<String | null>(null);
   const [notEnoughBal, setNotEnoughBal] = useState(false);
-  const maturity = selectedPool?.maturityTimeStamp
+  const maturity = selectedPool?.maturityTimeStamp;
   const signWithFreighter = async () => {
     setIsSubmitting(true);
 
@@ -99,8 +107,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
       setConnectionError(ERRORS.UNABLE_TO_SUBMIT_TX);
     }
   };
-
-
+  
   const getQuoteCont = async (
     id: string,
     txBuilder: TransactionBuilder,
@@ -113,9 +120,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
       return false;
     }
     const tx = txBuilder
-      .addOperation(
-        contract.call(functName)
-      )
+      .addOperation(contract.call(functName))
       .setTimeout(30)
       .build();
 
@@ -130,15 +135,23 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
       selectedNetwork.networkPassphrase
     );
 
-    const result: any = await getQuoteCont(selectedPool.contractAddress, txBuilderBalance, provider, connectorWalletAddress, functName);
-    setWihdrawalEnabled(functName === "available_redemption" && Number(result) > 0 ? true : false)
+    const result: any = await getQuoteCont(
+      selectedPool.contractAddress,
+      txBuilderBalance,
+      provider,
+      connectorWalletAddress,
+      functName
+    );
+    setWihdrawalEnabled(
+      functName === "available_redemption" && Number(result) > 0 ? true : false
+    );
     // console.log({[functName]: result});
-    return result
-  }
+    return result;
+  };
   // console.log({withdrawalEnabled})
   useEffect(() => {
-    readContract("available_redemption")
-  })
+    readContract("available_redemption");
+  });
   // console.log({maturity})
   useEffect(() => {
     if (signedXdr) {
@@ -161,27 +174,57 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
     }
   }, [depositAmount, userBalance]);
 
-
-
   const calculateAPY = () => {
-    
-    const bondsHeld = Number(selectedPool?.shareBalance)
-    const amountDeposited = Number(selectedPool?.reserves)
+    const bondsHeld = Number(selectedPool?.shareBalance);
+    const amountDeposited = Number(selectedPool?.reserves);
     const maturityDate: Date = new Date(Number(maturity) * 1000);
     const currentDate: Date = new Date();
-    const timeDifference: number = maturityDate.getTime() - currentDate.getTime();
-    const daysToMaturity: number = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-
+    const timeDifference: number =
+      maturityDate.getTime() - currentDate.getTime();
+    const daysToMaturity: number = Math.floor(
+      timeDifference / (1000 * 60 * 60 * 24)
+    );
 
     const redemptionValue = Number(bondsHeld) * 100;
-    const absoluteReturn = ((redemptionValue / Number(amountDeposited)) - 1) * 100;
+    const absoluteReturn =
+      (redemptionValue / Number(amountDeposited) - 1) * 100;
     const annualizedReturn = (365 / daysToMaturity) * absoluteReturn;
 
-    console.log({annualizedReturn,amountDeposited,redemptionValue, absoluteReturn, daysToMaturity})
+    console.log({
+      annualizedReturn,
+      amountDeposited,
+      redemptionValue,
+      absoluteReturn,
+      daysToMaturity,
+    });
     return annualizedReturn;
-};
+  };
 
- const APY = calculateAPY()
+  const APY = calculateAPY();
+
+  //  const asset = new IssuedAssetId(
+  //   "USDC",
+  //   "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+  // );
+
+  // const tx = txBuilder.addAssetSupport(asset).build();
+
+
+
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async () => {
+    if (selectedPool?.shareId) {
+      try {
+        await navigator.clipboard.writeText(selectedPool?.shareId);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    }
+  };
+
   return (
     <>
       <div
@@ -192,7 +235,9 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
             <div className="modal_content relative w-[550px] max-sm:w-full pb-5 rounded-lg text-[white] border-2 border-borderColor bg-[#1B2132] p-5 max-sm:pb-16">
               <div className="header flex justify-between items-start">
                 <div className="mb-6">
-                  <h1 className="text-lg">My Position</h1>
+                  <h1 className="text-lg">
+                    My Position - {selectedPool?.name}
+                  </h1>
                   <p className="text-paraDarkText text-sm">
                     Details of my position
                   </p>
@@ -213,32 +258,72 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
               <div className="currency_container p-3">
                 <div className=" flex justify-between mb-4">
                   <p className=" text-sm">Available Shares</p>
-                   <div className="flex gap-2 items-center">
-                   <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.shareBalance,2)))}</p>
-
-                   </div>
+                  <div className="flex gap-2 items-center">
+                    <p className="text-white text-sm">
+                      {formatWithCommas(
+                        Number(floatFigure(selectedPool.shareBalance, 2))
+                      )}
+                    </p>
+                  </div>
                 </div>
                 <div className=" flex justify-between mb-4">
                   <p className=" text-sm">Estimated redemption value</p>
-                  <p className="text-white text-sm">{formatWithCommas(Number(floatFigure(selectedPool.position,2)))}</p>
+                  <p className="text-white text-sm">
+                    {formatWithCommas(
+                      Number(floatFigure(selectedPool.position, 2))
+                    )}
+                  </p>
                 </div>
               </div>
-              <div className="">
-                <button className="button text-sm bg-blue-600 p-1 px-3 rounded-md my-4">Add BOND to wallet</button>
+              <div className="copy_bond my-4  currency_container py-3 px-3">
+                <div className="mb-3 flex justify-between items-center">
+                  <p className=" text-sm ">
+                    Add Bond Token - {selectedPool?.name} to wallet
+                  </p>
+
+                    <p className="text_grey text-[12px] underline cursor-pointer">Learn More</p>
                 </div>
-              {!withdrawalEnabled && <p className="text-sm text-bluish font-semibold ">Investor can redeem post maturity {selectedPool.expiration} at 8:00 am GMT</p>}
-                <div className="flex max-sm:flex-col justify-between gap-3 mt-4">
-                  <button className=" disable_btn w-1/2 max-sm:w-full py-3">Secondary Market (soon)</button>
-                  <button className=" disable_btn w-1/2 max-sm:w-full py-3">Buyback (soon)</button>
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text_grey cursor-pointer" onClick={copyToClipboard}>{`${selectedPool?.shareId.substring(
+                    0,
+                    7
+                  )}....${selectedPool?.shareId.substring(
+                    selectedPool?.shareId.length - 7
+                  )}`}</p>
+                  <button
+                    className="button text-[10px] bg-blue-600 p-1 px-3 rounded-md "
+                    onClick={copyToClipboard}
+                  >
+                    {copied? 'Copied': 'Copy'}
+                  </button>
                 </div>
+              </div>
+              {!withdrawalEnabled && (
+                <p className="text-sm text-bluish font-semibold ">
+                  Investor can redeem post maturity {selectedPool.expiration} at
+                  8:00 am GMT
+                </p>
+              )}
+              <div className="flex max-sm:flex-col justify-between gap-3 mt-4">
+                <button className=" disable_btn w-1/2 max-sm:w-full py-3">
+                  Secondary Market (soon)
+                </button>
+                <button className=" disable_btn w-1/2 max-sm:w-full py-3">
+                  Buyback (soon)
+                </button>
+              </div>
               <button
-               className={`mt-4 py-3 w-full flex ${
-                Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled ? "disable_btn hover:bg-transparent" : "proceed"
-              }`}
+                className={`mt-4 py-3 w-full flex ${
+                  Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled
+                    ? "disable_btn hover:bg-transparent"
+                    : "proceed"
+                }`}
                 onClick={() => setStep(1)}
-                disabled={Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled}
+                disabled={
+                  Number(selectedPool.shareBalance) <= 0 || !withdrawalEnabled
+                }
               >
-                  <p className="mx-auto">Proceed to Redeem</p>
+                <p className="mx-auto">Proceed to Redeem</p>
               </button>
             </div>
           )}
@@ -308,7 +393,9 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
                     <p className="text-[14px] text-paraDarkText">
                       Avail. Shares:
                     </p>
-                    <h2 className="text-[14px] text-white">${selectedPool.shareBalance}</h2>
+                    <h2 className="text-[14px] text-white">
+                      ${selectedPool.shareBalance}
+                    </h2>
                   </div>
                   {/* <h2 className="text-[14px] text-paraDarkText">$23,123</h2> */}
                 </div>
@@ -323,13 +410,17 @@ const WithdrawFunds: React.FC<{ setOpenState: any}> = ({
               )}
               <button
                 className={`mt-7 py-3 w-full flex ${
-                  notEnoughBal || Number(selectedPool.shareBalance) <= 0 ? "button1 text-paraDarkText" : "proceed"
+                  notEnoughBal || Number(selectedPool.shareBalance) <= 0
+                    ? "button1 text-paraDarkText"
+                    : "proceed"
                 }`}
                 // onClick={() => {
                 //   !isGettingFee &&  submit();
                 // }}
                 onClick={signWithFreighter}
-                disabled={notEnoughBal || Number(selectedPool.shareBalance) <= 0}
+                disabled={
+                  notEnoughBal || Number(selectedPool.shareBalance) <= 0
+                }
               >
                 {isSubmitting ? (
                   <div className="mx-auto">

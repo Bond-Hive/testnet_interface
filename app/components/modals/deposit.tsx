@@ -333,8 +333,8 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
               }
               <div className="currency_container p-3">
                 <div className=" flex justify-between mb-4">
-                  <p className="text-paraDarkText text-sm">Asset</p>
-                  <p className="text-paraDarkText text-sm">Enter Amount</p>
+                  <p className="text_grey text-sm">Asset</p>
+                  <p className="text_grey text-sm">Enter Amount</p>
                 </div>
 
                 <div className=" flex justify-between items-center">
@@ -366,7 +366,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                 </div>
                 <div className="balance flex justify-between">
                   <div className="flex items-center gap-1 ">
-                    <div className="flex items-center">
+                    <div className="flex items-center ">
                     <Image
                       src={Wallet}
                       width={17}
@@ -375,11 +375,11 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                       className=""
                     />
                     </div>
-                    <h2 className="text-md text-paraDarkText">
+                    <h2 className="text-md text_grey">
                       ${formatWithCommas(userBalance)}
                     </h2>
                   </div>
-                  <h2 className="text-[14px] text-paraDarkText"><small>Min.</small> 100 USDC</h2>
+                  <h2 className="text-[14px] text_grey"><small>Min.</small> {`${selectedPool.ticker == "BTC" ? "100" : "10"}`} USDC</h2>
                 </div>
                 <div className="border-t border-border_pri pt-4 mt-6">
                 <div className=" flex items-center justify-between mb-1">
@@ -458,7 +458,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
               <div className="header flex justify-between items-start">
                 <div className="mb-6">
                   <h1 className="text-lg">Deposit Transaction Settings</h1>
-                  <p className="text-paraDarkText text-sm">
+                  <p className="text_grey text-sm">
                     Adjust Estimate Fee and Add memo for transaction (optional)
                   </p>
                 </div>
@@ -477,23 +477,23 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
               </div>
               <div className="mt-8">
                 <div className=" flex justify-between mb-4 items-center">
-                  <h1 className="text-paraDarkText">Network</h1>
-                  <h1 className="text-1xl text-paraDarkText">{selectedNetwork.network}</h1>
+                  <h1 className="text_grey">Network</h1>
+                  <h1 className="text-1xl text_grey">{selectedNetwork.network}</h1>
                 </div>
                 <div className=" flex justify-between mb-4 items-center">
-                  <h1 className="text-paraDarkText">Estimate fee (XLM)</h1>
+                  <h1 className="text_grey">Estimate fee (XLM)</h1>
                   <h1 className="text-1xl">{fee}</h1>
                 </div>
                 <div className=" flex justify-between mb-4 items-center">
-                  <h1 className="text-paraDarkText">Quantity</h1>
+                  <h1 className="text_grey">Quantity</h1>
                   <h1 className="text-1xl">{depositAmount} USDC</h1>
                 </div>
                 <div className=" flex justify-between mb-4 items-center">
-                  <h1 className="text-paraDarkText">Quote Activated</h1>
+                  <h1 className="text_grey">Quote Activated</h1>
                   <h1 className="text-1xl">{ Number(quoteFromSc) > 0 ? quoteFromSc : "Getting Quote..."}</h1>
                 </div>
                 <div className="mt-5">
-                  <p className="text-[12px] mb-2 text-paraDarkText">Write memo for your transaction (optional)</p>
+                  <p className="text-[12px] mb-2 text_grey">Write memo for your transaction (optional)</p>
                   <textarea
                     id="memo"
                     className="text-secText max-md:py-[16px] h-[80px] block w-full p-2 py-4 pl-3 text-[16px] outline-none bg-dappHeaderBg border-border_pri border rounded-md"

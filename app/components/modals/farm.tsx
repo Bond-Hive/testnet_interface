@@ -352,7 +352,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                     />
                   </div>
                   <div className=" flex items-center gap-1 md:px-3 md:py-2">
-                    <h1 className="md:text-md text-sm text_grey">TON/USDT LP</h1>
+                    <h1 className="md:text-md text-sm text_grey">BOND/USDT LP</h1>
                   </div>
                 </div>
 
@@ -385,7 +385,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                     <p className="text-white text-md max-sm:text-sm">17 398.2271</p>
                   </div>
                   <div className=" flex items-center justify-between mb-1 mb-3">
-                    <p className="text_grey text-md max-sm:text-sm">TON</p>
+                    <p className="text_grey text-md max-sm:text-sm">BOND</p>
                     <p className="text-white text-md max-sm:text-sm">2 632.345</p>
                   </div>
                 </div>
@@ -396,7 +396,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                   </div>
                   <div className=" flex items-center justify-between mb-1 mb-4">
                     <p className="text_grey text-md max-sm:text-sm">Blockchain Fee</p>
-                    <p className="text-white text-md max-sm:text-sm">0.14 - 0.8 TON</p>
+                    <p className="text-white text-md max-sm:text-sm">0.14 - 0.8 BOND</p>
                   </div>
                 </div>
               </div>
@@ -435,7 +435,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
               <h1 className="text-2xl px-16 mb-7">
                 Confirm transaction in your wallet
               </h1>
-              <p className="text_grey text-sm">Farm 0.1998783 TON/USDT LP</p>
+              <p className="text_grey text-sm">Farm 0.1998783 BOND/USDT LP</p>
             </div>
           )}
           {step === 2 && (
@@ -458,7 +458,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
             <h1 className="text-2xl px-16">
             One more second
             </h1>
-            <p className="text_grey text-sm">Farm 0.1998783 TON/USDT LP</p>
+            <p className="text_grey text-sm">Farm 0.1998783 BOND/USDT LP</p>
           </div>
           )}
                     {step === 3 && (
@@ -481,7 +481,7 @@ const FarmDeposit: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
             <h1 className="text-2xl px-16">
             Your transaction was successful
             </h1>
-            <p className="text_grey text-sm mb-5">Farm 0.1998783 TON/USDT LP</p>
+            <p className="text_grey text-sm mb-5">Farm 0.1998783 BOND/USDT LP</p>
             <p className="text-blueish text-sm">View on explorer</p>
 
             <button
