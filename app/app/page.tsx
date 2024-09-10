@@ -71,16 +71,16 @@ const MainDapp = () => {
     return ethers.formatUnits(result, 7);
   }; 
 
-
+  const connectorAddr = connectorWalletAddress ? connectorWalletAddress : "GB3FAF7IKMH4KMZGL35RMN4ZJK7VLAXOQHK44DWX6VGVOLLUGMPIDMT5"
   const getPoolReserve = async (poolIndex: number) => {
     const txBuilderBalance = await getTxBuilder(
-      connectorWalletAddress!,
+      connectorAddr,
       BASE_FEE,
       provider,
       selectedNetwork.networkPassphrase
     );
 
-    const poolReserve: any = await getReserveContractCal(pool[poolIndex].contractAddress, txBuilderBalance, provider, connectorWalletAddress);
+    const poolReserve: any = await getReserveContractCal(pool[poolIndex].contractAddress, txBuilderBalance, provider, connectorAddr);
     setPoolReserve({[poolIndex]: parseFloat(poolReserve).toFixed(2).toString()})
     return poolReserve
   }
@@ -147,10 +147,10 @@ const MainDapp = () => {
 console.log({selectedNetwork})
   useEffect(() => {
       const updatedPool = async () => {
-        if(connectorWalletAddress && pool){
+        if(pool){
           const updatedPools = await Promise.all(pools.map(async (pool: any, index: number) => {
             const reserves = await getPoolReserve(index)
-            const shareBalance = await getShareBalance(index)
+            const shareBalance = connectorWalletAddress && await getShareBalance(index)
             const maturityDate:string = await readContract("maturity", index)
 
             // console.log({[`${index}-maturityDate`]: dateFormat(maturityDate)})
@@ -196,13 +196,13 @@ console.log({selectedNetwork})
       };
       const readContract = async (functName: string, index: number) => {
         const txBuilderBalance = await getTxBuilder(
-          connectorWalletAddress!,
+          connectorAddr,
           BASE_FEE,
           provider,
           selectedNetwork.networkPassphrase
         );
     
-        const result: any = await readContIntr(pool[index].contractAddress, txBuilderBalance, provider, connectorWalletAddress, functName);
+        const result: any = await readContIntr(pool[index].contractAddress, txBuilderBalance, provider, connectorAddr, functName);
         const now = BigInt(Math.floor(Date.now() / 1000))
         return result
       }
