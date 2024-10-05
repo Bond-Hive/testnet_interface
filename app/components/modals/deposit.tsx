@@ -57,6 +57,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
   const [depositEnabled, setDepositEnabled] = useState(true)
   // const [maturity,setMaturity] = useState(0)
   const [quoteFromSc, setQuoteFromSC] = useState("")
+  const [rawQuote, setRawQuote] = useState('')
   const maturity = selectedPool?.maturityTimeStamp
   // after depoist input proceed to the next
   // const getFee = async () => {
@@ -109,6 +110,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       memo,
       txBuilderAdmin,
       server: provider,
+      quote: rawQuote
     });
 
     try {
@@ -117,6 +119,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       setIsSubmitting(false);
       setSignedXdr(signedTx);
     } catch (e) {
+      console.log(e)
       setIsSubmitting(false);
       setConnectionError(ERRORS.UNABLE_TO_SIGN_TX);
     }
@@ -164,7 +167,9 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       .build();
 
     const result = await simulateTx<string>(tx, connection);
-    return ethers.formatUnits(result, selectedPool.shareDecimals);
+    const formattedQuoteFromSC = ethers.formatUnits(result, selectedPool.shareDecimals)
+    const quoteFromSC = result
+    return {formattedQuoteFromSC, quoteFromSC};
   };
   const getQuote = async () => {
     setQuoteActivationLoading(true)
@@ -175,10 +180,12 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       selectedNetwork.networkPassphrase
     );
     // setQuoteProcessAlert("Checking Quote...")
-    const quote: any = await getQuoteCont(selectedPool.contractAddress, txBuilderBalance, provider, connectorWalletAddress);
+    const {formattedQuoteFromSC: quote, quoteFromSC}: any = await getQuoteCont(selectedPool.contractAddress, txBuilderBalance, provider, connectorWalletAddress);
     setQuoteActivationLoading(Number(quote) > 0  ? false : true)
     setQuoteProcessAlert(Number(quote) > 0  ? "Quote successful." : 'No Quote, Requesting Quote.')
+    setRawQuote(quoteFromSC)
     setQuoteFromSC(quote)
+    console.log({quoteFromSC: quote})
     return quote
   }
 
@@ -246,7 +253,6 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
     setQuoteProcessAlert('Requesting Quote...')
     try {
       const {data, isLoading} = await ActivateQuote(contractAddress)
-      console.log({initialQuote: data})
       if(data){
         setInitialQuote(ethers.formatUnits(data?.quote, selectedPool.shareDecimals))
         setQuoteActivated(true)
@@ -266,6 +272,7 @@ const DepositFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
     // }
   // }, [quoteStatus,quoteActivated, quoteActivationLoading, step])
   }, [])
+  console.log({initialQuote, quoteFromSc})
 
   const maxDeposit = () => {
     setDepositAmount(userBalance)

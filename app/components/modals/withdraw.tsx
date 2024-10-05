@@ -145,6 +145,7 @@ const WithdrawFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
     setWihdrawalEnabled(
       functName === "available_redemption" && Number(result) > 0 ? true : false
     );
+    console.log({functName: result})
     // console.log({[functName]: result});
     return result;
   };
@@ -174,40 +175,33 @@ const WithdrawFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
     }
   }, [depositAmount, userBalance]);
 
-  const calculateAPY = () => {
-    const bondsHeld = Number(selectedPool?.shareBalance);
-    const amountDeposited = Number(selectedPool?.reserves);
-    const maturityDate: Date = new Date(Number(maturity) * 1000);
-    const currentDate: Date = new Date();
-    const timeDifference: number =
-      maturityDate.getTime() - currentDate.getTime();
-    const daysToMaturity: number = Math.floor(
-      timeDifference / (1000 * 60 * 60 * 24)
-    );
+  // const calculateAPY = () => {
+  //   const bondsHeld = Number(selectedPool?.shareBalance);
+  //   const amountDeposited = Number(selectedPool?.reserves);
+  //   const maturityDate: Date = new Date(Number(maturity) * 1000);
+  //   const currentDate: Date = new Date();
+  //   const timeDifference: number =
+  //     maturityDate.getTime() - currentDate.getTime();
+  //   const daysToMaturity: number = Math.floor(
+  //     timeDifference / (1000 * 60 * 60 * 24)
+  //   );
 
-    const redemptionValue = Number(bondsHeld) * 100;
-    const absoluteReturn =
-      (redemptionValue / Number(amountDeposited) - 1) * 100;
-    const annualizedReturn = (365 / daysToMaturity) * absoluteReturn;
+  //   const redemptionValue = Number(bondsHeld) * 100;
+  //   const absoluteReturn =
+  //     (redemptionValue / Number(amountDeposited) - 1) * 100;
+  //   const annualizedReturn = (365 / daysToMaturity) * absoluteReturn;
 
-    console.log({
-      annualizedReturn,
-      amountDeposited,
-      redemptionValue,
-      absoluteReturn,
-      daysToMaturity,
-    });
-    return annualizedReturn;
-  };
+  //   console.log({
+  //     annualizedReturn,
+  //     amountDeposited,
+  //     redemptionValue,
+  //     absoluteReturn,
+  //     daysToMaturity,
+  //   });
+  //   return annualizedReturn;
+  // };
 
-  const APY = calculateAPY();
-
-  //  const asset = new IssuedAssetId(
-  //   "USDC",
-  //   "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
-  // );
-
-  // const tx = txBuilder.addAssetSupport(asset).build();
+  // const APY = calculateAPY();
 
 
 
@@ -224,6 +218,40 @@ const WithdrawFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
       }
     }
   };
+
+const depositsForAwallet = [
+    { bondsHeld: 5.02, amountDeposited: 500, daysToMaturity: 60 },
+    // { bondsHeld: 10.05, amountDeposited: 1000, daysToMaturity: 33 },
+    // { bondsHeld: 50.15, amountDeposited: 5000, daysToMaturity: 10 }
+];
+
+  const calculateAPYY = (bondsHeld: number, amountDeposited: number, daysToMaturity: number) => {
+    const redemptionValue = Number(bondsHeld) * 100;
+    const absoluteReturn = ((redemptionValue / Number(amountDeposited)) - 1) * 100;
+    const annualizedReturn = (365 / daysToMaturity) * absoluteReturn;
+
+    return annualizedReturn;
+};
+
+const calculateAggregateAPY = (deposits: any[]) => {
+    let totalWeightedAPY = 0;
+    let totalAmountDeposited = 0;
+
+    deposits.forEach((deposit: any) => {
+        const { bondsHeld, amountDeposited, daysToMaturity } = deposit;
+        const apy = calculateAPYY(bondsHeld, amountDeposited, daysToMaturity);
+
+        totalWeightedAPY += apy * amountDeposited;
+        totalAmountDeposited += amountDeposited;
+    });
+
+    const aggregateAPY = totalWeightedAPY / totalAmountDeposited;
+    return aggregateAPY;
+};
+
+const aggregateAPY = calculateAggregateAPY(depositsForAwallet);
+
+console.log('Aggregate APY:', aggregateAPY);
 
   return (
     <>
@@ -272,6 +300,14 @@ const WithdrawFunds: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                     {formatWithCommas(
                       Number(floatFigure(selectedPool.position, 2))
                     )}
+                  </p>
+                </div>
+                <div className=" flex justify-between mb-4">
+                  <p className=" text-sm">Aggregate APY</p>
+                  <p className="text-white text-sm">
+                    {formatWithCommas(
+                      Number(floatFigure(aggregateAPY, 2))
+                    )}%
                   </p>
                 </div>
               </div>

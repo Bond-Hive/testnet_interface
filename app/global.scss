@@ -258,6 +258,25 @@ html {
 .button2:hover {
   box-shadow: none;
 }
+
+.disconnectbtn {
+  // height: 40px;
+  flex-shrink: 0;
+  color: var(--White, #fff);
+  font-size: 14.5px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+  border-radius: 6px;
+  background: #ee2424;
+  box-shadow: 0px 4px 10px 4px rgba(2, 3, 28, 0.8),
+    0px 0px 0px 4px rgba(206, 206, 251, 0.16),
+    0px -4px 12px 0px rgba(234, 234, 251, 0.3) inset;
+}
+.disconnectbtn:hover {
+  box-shadow: none;
+}
+
 .time_tag {
   border-radius: 5px;
   background: rgba(165, 134, 254, 0.11);
@@ -466,4 +485,28 @@ box-shadow: 0px -12px 24px 0px rgba(158, 113, 255, 0.20) inset;
 		// Move shine from left to right, with offset on the right based on the width of the shine - see background-size
 		background-position: right -40px top 0;
 	}
+}
+
+
+
+
+.farmToggleBtn {
+  // height: 40px;
+  flex-shrink: 0;
+  color: var(--White, #fff);
+  font-size: 14.5px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+  border-radius: 50%;
+  background: #602af8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 4px 10px 4px rgba(2, 3, 28, 0.8),
+    0px 0px 0px 4px rgba(206, 206, 251, 0.16),
+    0px -4px 12px 0px rgba(234, 234, 251, 0.3) inset;
+}
+.farmToggleBtn:hover {
+  box-shadow: none;
 }

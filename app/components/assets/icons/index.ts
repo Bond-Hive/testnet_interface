@@ -17,6 +17,7 @@ import ArrowRightUpGrey from "./arrowRightUpGrey.svg"
 import StableReturnsIcon from "./stableReturnsIcon.svg"
 import DepositSuccess from "./depositSuccess.png"
 import LoadingImg from "./loading.png"
+import RewardsIcon from "./rewards.svg"
 export {
     ArrowRight,
     TransparentIcon,
@@ -36,5 +37,6 @@ export {
     ArrowRightUpGrey,
     StableReturnsIcon,
     DepositSuccess,
-    LoadingImg
+    LoadingImg,
+    RewardsIcon
 }

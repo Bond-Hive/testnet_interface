@@ -114,43 +114,53 @@ const MainDapp = () => {
   };
   const getShareBalance = async (poolIndex: number) => {
     const txBuilderBalance = await getTxBuilder(
-      connectorWalletAddress!,
+      connectorAddr!,
       BASE_FEE,
       provider,
       selectedNetwork.networkPassphrase
     );
 
-    const shareBalance: any = await getShareCont(pool[poolIndex].shareId, txBuilderBalance, provider, connectorWalletAddress);
+    const shareBalance: any = await getShareCont(pool[poolIndex].shareId, txBuilderBalance, provider, connectorAddr);
     return shareBalance
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data } = await GetAPY("https://bondexecution.onrender.com/monitoring/getYields");
-      if (data) setLoadingApy(false);
+  const fetchData = async () => {
+    // setLoadingApy(true);
+    const { data } = await GetAPY(
+      "https://bondexecution.onrender.com/monitoring/getYields"
+    );
+    if (data) {
+      setLoadingApy(true);
       // for testing
-      setPools((prevPools: any) =>
-        prevPools.map((pool: any, index: any) => ({
-          ...pool,
-          apy: data.data[index].averageYieldPostExecution?.upper,
-        }))
-      );
-    };
-  
+      setPools((prevPools: any) => {
+        const updatedPools = prevPools.map((pool: any) => {
+          const activePool = data?.data.find(
+            (activePool: any) =>
+              activePool?.symbolFuture === pool?.symbolFuture
+          );
 
-    fetchData();
-  
+          return {
+            ...pool,
+            apy: activePool?.averageYieldPostExecution?.upper || "expired",
+          };
+        });
+        return updatedPools.sort((a: any, b: any) =>
+          a.apy === "expired" ? 1 : -1
+        );
+      });
+      setLoadingApy(false);
+    }
+  };
+  useEffect(() => {
+
     const interval = setInterval(fetchData, 10000);
-  
     return () => clearInterval(interval);
   }, []);
-console.log({selectedNetwork})
-  useEffect(() => {
       const updatedPool = async () => {
         if(pool){
           const updatedPools = await Promise.all(pools.map(async (pool: any, index: number) => {
             const reserves = await getPoolReserve(index)
-            const shareBalance = connectorWalletAddress && await getShareBalance(index)
+            const shareBalance = connectorAddr && await getShareBalance(index)
             const maturityDate:string = await readContract("maturity", index)
 
             // console.log({[`${index}-maturityDate`]: dateFormat(maturityDate)})
@@ -162,15 +172,18 @@ console.log({selectedNetwork})
               maturityTimeStamp: maturityDate,
               expiration: dateFormat(maturityDate),
               position: Number(shareBalance) * 100,
-              depositEnabled: BigInt(maturityDate) > now
+              depositEnabled: BigInt(maturityDate) > now,
+              apy: pool?.apy
             }
           }))
           setPools(updatedPools)
           setLoadPool(true)
         }
       }
+  useEffect(() => {
+
       updatedPool()
-  }, [connectorWalletAddress,  transactionsStatus?.deposit, transactionsStatus])
+  }, [connectorAddr,  transactionsStatus?.deposit, transactionsStatus])
 
       //  READ FUNCTION
       const readContIntr = async (
@@ -462,7 +475,20 @@ console.log({selectedNetwork})
 
                   </div>
                   <div className="APY text-blueish  w-3/12">
-                    <h1 className="text-[16px] mb-1 ">                      {loadingApy ? <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div> : pool.apy}</h1>
+                  <h1
+                        className={`text-[16px] mb-1 ${
+                          pool?.apy == "expired"
+                            ? "text-red-600 uppercase"
+                            : "text-blueish"
+                        }`}
+                      >
+                        {" "}
+                        {!pool.expiration || loadingApy ? (
+                          <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>
+                        ) : (
+                          pool?.apy
+                        )}
+                      </h1>
                     {/* <h1 className="text-[16px] mb-1 ">10.90 (testing)</h1> */}
                     <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
                       {" "}
@@ -526,9 +552,6 @@ console.log({selectedNetwork})
                         id={!pool.
                         depositEnabled ? "depositDisabled" : ''}
                     >
-                      {
-                        
-                      }
                       <p className="text-sm ">{pool?.expiration  && !pool.
                         depositEnabled ? "Maturity reached" : "Invest"}</p>
                       <Image
