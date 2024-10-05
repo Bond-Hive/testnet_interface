@@ -116,7 +116,6 @@ const DAppHeader = () => {
             // Set selected wallet,  network, and public key
             kit.setWallet(option.id);
             const publicKey = await kit.getPublicKey();
-
             await kit.setNetwork(WalletNetwork.PUBLIC);
             setConnectorWalletAddress(publicKey);
                         await retrievePublicKey();

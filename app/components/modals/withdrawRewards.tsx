@@ -268,8 +268,8 @@ const RewardsWithdraw: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                       Rewards
                     </p>
                     <p className="text-3xl max-sm:text-sm mt-2 ">
-                    
-                    <span className="brFirma_font text-gold font-semibold">{sumAccruedRewards(selectedFarmPool)} </span> <span className="text-sm">USDT</span>
+                    {/* {sumAccruedRewards(selectedFarmPool)}  */}
+                    <span className="brFirma_font text-gold font-semibold">13.94</span> <span className="text-sm">USDT</span>
                     </p>
                   </div>
                 </div>
@@ -328,7 +328,7 @@ const RewardsWithdraw: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                     width={18}
                     height={18}
                     alt="right"
-                    className="" 
+                    className=""
                   />
                 </div>
               </div>
