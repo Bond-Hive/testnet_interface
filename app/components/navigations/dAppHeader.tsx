@@ -128,8 +128,8 @@ const DAppHeader = () => {
       });
     }
   };
+
   const disconnectWallet = async () => {
-    await kit.disconnect()
     setConnectorWalletAddress(null); 
     setUserBalance(null);
     // alert("Wallet disconnected successfully");
