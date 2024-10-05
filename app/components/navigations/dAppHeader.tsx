@@ -115,9 +115,9 @@ const DAppHeader = () => {
           try {
             // Set selected wallet,  network, and public key
             kit.setWallet(option.id);
-            const {address: publicKey} = await kit.getAddress();
+            const publicKey = await kit.getPublicKey();
 
-            // await kit.setNetwork(WalletNetwork.TESTNET);
+            await kit.setNetwork(WalletNetwork.PUBLIC);
             setConnectorWalletAddress(publicKey);
                         await retrievePublicKey();
           } catch (error) {
@@ -128,7 +128,6 @@ const DAppHeader = () => {
       });
     }
   };
-
   const disconnectWallet = async () => {
     await kit.disconnect()
     setConnectorWalletAddress(null); 
@@ -193,9 +192,9 @@ const DAppHeader = () => {
     }
   }, [connectorWalletAddress,transactionsStatus]);
 
-  // useEffect(() => {
-  //   retrievePublicKey()
-  // }, [connectorWalletAddress])
+  useEffect(() => {
+    retrievePublicKey()
+  }, [connectorWalletAddress])
   const inferredNetwork = async () => {
     if (await isConnected() || connectorWalletAddress) {
       const networkPassphrase = await getNetwork();
@@ -337,12 +336,17 @@ const [networkChange, setNetworkChange] = useState(false)
             </p>
             {/* <Image src={ArrowRight} width={13} height={13} alt="bondhive" /> */}
           </button>
-          <button
-            className={`disconnectbtn flex items-center px-[16px] max-sm:px-2 py-[5px] max-sm:py-1 max-sm:text-[11px]  h-[40px]`}
-            onClick={disconnectWallet}
-          >
-            Disconnect
-          </button>
+          {
+            connectorWalletAddress && (
+              <button
+              className={`disconnectbtn flex items-center px-[16px] max-sm:px-2 py-[5px] max-sm:py-1 max-sm:text-[11px]  h-[40px]`}
+              onClick={disconnectWallet}
+            >
+              Disconnect
+            </button>
+            )
+          }
+
         </div>
       </div>
     </div>

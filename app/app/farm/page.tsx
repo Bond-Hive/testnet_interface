@@ -564,7 +564,7 @@ const FarmPage = () => {
             <>
               {userFarmPositions.length > 0 ? (
                 userFarmPositions?.map((farm: any, index: number) => (
-                  <div className="farm card1 max-w-[1500px] mx-auto px-7 max-md:px-5 py-4 mb-6 border-b border-gray-700 rounded-xl">
+                  <div key={index} className="farm card1 max-w-[1500px] mx-auto px-7 max-md:px-5 py-4 mb-6 border-b border-gray-700 rounded-xl">
                     <div
                       key={`farm-${index * 8}`}
                       className={`head flex max-md:flex-col items-center justify-between  ${
