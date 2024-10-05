@@ -329,7 +329,7 @@ const FarmWithdraw: React.FC<{ setOpenState: any }> = ({ setOpenState }) => {
                   />
                 </div>
               </div>
-              <SpinningLoading/>
+              {/* <SpinningLoading/> */}
               <h1 className="text-2xl px-16 mb-7">
                 Confirm Withdrawal transaction in your wallet for{" "}
                 {selectedFarmPool?.name}
