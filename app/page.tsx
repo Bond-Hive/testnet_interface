@@ -91,25 +91,36 @@ export default function Home() {
   };
 
   const [pools, setPools] = useState(pool);
-  console.log({ pools, selectedNetwork });
+  // console.log({ pools, selectedNetwork });
 
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await GetAPY(
         "https://bondexecution.onrender.com/monitoring/getYields"
       );
-      setPools((prevPools: any) => {
-        const updatedPools = prevPools.map((pool: any) => {
-          const activePool = data?.data.find((activePool: any) => activePool?.symbolFuture === pool?.symbolFuture)
+      if (data) {
+    
+        const extractedApys = data?.data.map((poolApy: any) => {
+          return {
+            apy: poolApy?.averageYieldPostExecution?.upper || "expired",
+          };
+        });
 
-            return {
-              ...pool,
-              apy: activePool?.averageYieldPostExecution?.upper || "expired"
-            }
-        })
-        return updatedPools.sort((a: any, b: any) => (a.apy === "expired" ? 1 : -1))
+        setPools((prevPools: any) => {
+          const updatedPools = prevPools.map((pool: any, poolIndex: number) => {
+            const activePool = extractedApys.find((_:any, index: number) => index === poolIndex)
+  
+              return {
+                ...pool,
+                apy: activePool?.apy
+              }
+          })
+          // return updatedPools.sort((a: any, b: any) => (a.apy === "expired" ? 1 : -1))
+          return updatedPools
+        }
+        );
       }
-      );
+
     };
 
     // Initial fetch

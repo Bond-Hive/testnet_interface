@@ -72,7 +72,7 @@ const MainDapp = () => {
     return ethers.formatUnits(result, 7);
   }; 
 
-  const connectorAddr = connectorWalletAddress ? connectorWalletAddress : "GB3FAF7IKMH4KMZGL35RMN4ZJK7VLAXOQHK44DWX6VGVOLLUGMPIDMT5"
+  const connectorAddr = connectorWalletAddress ? connectorWalletAddress : "GBE3GK4YPHHD6P45GSM46C6YBKWM5GLAVOEEGKUXSAZIA7W3KS4RCDSC"
   const getPoolReserve = async (poolIndex: number) => {
     const txBuilderBalance = await getTxBuilder(
       connectorAddr,
@@ -131,23 +131,15 @@ const MainDapp = () => {
     );
     if (data) {
       setLoadingApy(true);
-      
-      // Extract APYs and store them in 'apys'
-      const extractedApys = pools.map((pool: any) => {
-        const activePool = data?.data.find(
-          (activePool: any) =>
-            activePool?.symbolFuture === pool?.symbolFuture
-        );
   
+      const extractedApys = data?.data.map((poolApy: any) => {
         return {
-          symbolFuture: pool?.symbolFuture,
-          apy: activePool?.averageYieldPostExecution?.upper || "expired",
-          expired: !activePool?.averageYieldPostExecution?.upper,
-          active: !!activePool?.averageYieldPostExecution?.upper,
+          apy: poolApy?.averageYieldPostExecution?.upper || "expired",
         };
       });
-  
-      setApys(extractedApys); // Store the APY values separately
+
+      console.log({extractedApys})
+      setApys(extractedApys);
       setLoadingApy(false);
     }
   };
@@ -165,9 +157,9 @@ const MainDapp = () => {
 
             // console.log({[`${index}-maturityDate`]: dateFormat(maturityDate)})
             const now = BigInt(Math.floor(Date.now() / 1000))
-            const poolApy = apys.find(
-              (apyEntry: any) => apyEntry?.symbolFuture === pool?.symbolFuture
-            );
+            const poolApy = apys.find((apyEntry: any, i: number) => i === index);
+          
+            const isExpired = BigInt(maturityDate) <= now;
             return {
               ...pool,
               reserves,
@@ -177,8 +169,8 @@ const MainDapp = () => {
               position: Number(shareBalance) * 100,
               depositEnabled: BigInt(maturityDate) > now,
               apy: poolApy?.apy || 0.00,
-              active: poolApy?.active,
-              expired: poolApy?.expired
+              active: !isExpired,
+              expired: isExpired
             }
           }))
           setPools(updatedPools)
@@ -236,7 +228,7 @@ const MainDapp = () => {
               return valueB - valueA;
             }
           });
-          console.log({ sortedPools });
+          // console.log({ sortedPools });
           return sortedPools; // Return the sortedPools array directly, not wrapped in an object
         });
         
@@ -246,7 +238,7 @@ const MainDapp = () => {
   useEffect(() => {
     const getNetwork = async () => {
       const networkDetails = await getNetworkDetails()
-      console.log({networkDetails})
+      // console.log({networkDetails})
       if(networkDetails.network == "PUBLIC"){
         setIsTestnet(false)
       } else if(networkDetails.network == "TESTNET"){
@@ -254,7 +246,7 @@ const MainDapp = () => {
       } else{
         setIsTestnet(null)
       }
-      console.log({networkDetails: networkDetails.network})
+      // console.log({networkDetails: networkDetails.network})
     }
     getNetwork()
   }, [])
@@ -524,7 +516,7 @@ const MainDapp = () => {
             <div className="table_pool_container max-lg:hidden">
               {activePools.map((pool: any, index: number) => (
                 <div
-                  className={`table_pool flex items-start px-4 border-border_pri pb-3 pt-6 ${
+                  className={`table_pool flex items-center px-4 border-border_pri pb-3 pt-6 ${
                     index !== 0 && "border-t"
                   }`}
                   key={`${index}--pool`}
@@ -556,14 +548,14 @@ const MainDapp = () => {
                         }`}
                       >
                         {" "}
-                        {!pool.expiration || loadingApy ? (
+                        {!pool.expiration || loadingApy || Number(pool?.apy) == 0 ?(
                           <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>
                         ) : (
                           pool?.apy
                         )}
                       </h1>
                     {/* <h1 className="text-[16px] mb-1 ">10.90 (testing)</h1> */}
-                    <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
+                    {/* <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
                       {" "}
                       <Image
                         src={ApyArrowIcon}
@@ -575,7 +567,7 @@ const MainDapp = () => {
                       <p className="text-[13px] text-[#A586FE]">
                         2.1% vs. last month
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                   <div className="Deposit_asset text-blueish w-3/12 flex items-center">
                     <div className="asset_logo ">
@@ -646,7 +638,7 @@ const MainDapp = () => {
             <div className="table_pool_container max-lg:hidden">
               {expiredPools.map((pool: any, index: number) => (
                 <div
-                  className={`table_pool flex items-start px-4 border-border_pri pb-3 pt-6 ${
+                  className={`table_pool flex items-center px-4 border-border_pri pb-3 pt-6 ${
                     index !== 0 && "border-t"
                   }`}
                   key={`${index}--pool`}
@@ -678,26 +670,12 @@ const MainDapp = () => {
                         }`}
                       >
                         {" "}
-                        {!pool.expiration || loadingApy ? (
+                        {!pool.expiration || loadingApy || Number(pool?.apy) == 0.00 ? (
                           <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>
                         ) : (
                           pool?.apy
                         )}
                       </h1>
-                    {/* <h1 className="text-[16px] mb-1 ">10.90 (testing)</h1> */}
-                    <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
-                      {" "}
-                      <Image
-                        src={ApyArrowIcon}
-                        width={14}
-                        height={14}
-                        alt="right"
-                        className=""
-                      />{" "}
-                      <p className="text-[13px] text-[#A586FE]">
-                        2.1% vs. last month
-                      </p>
-                    </div>
                   </div>
                   <div className="Deposit_asset text-blueish w-3/12 flex items-center">
                     <div className="asset_logo ">
@@ -790,9 +768,9 @@ const MainDapp = () => {
                     </div>
                     <div className="APY text-blueish  ">
                       <h1 className="text-[16px] mb-1 ">
-                      {loadingApy ? <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div> : pool.apy}
+                      {!pool.expiration || loadingApy || Number(pool?.apy) == 0 ?<div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div> : pool.apy}
                         </h1>
-                      <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
+                      {/* <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px]">
                         {" "}
                         <Image
                           src={ApyArrowIcon}
@@ -804,7 +782,7 @@ const MainDapp = () => {
                         <p className="text-[12px] text-[#A586FE]">
                           2.1% vs. last month
                         </p>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                   <div className="text-[16px] py-4">

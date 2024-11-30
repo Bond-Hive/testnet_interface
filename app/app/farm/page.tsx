@@ -80,14 +80,14 @@ const FarmPage = () => {
   const [openFarmModal, setOpenFarmModal] = useState(false);
   const [openFarmWithdrawModal, setOpenFarmWithdrawModal] = useState(false);
   const [openWithdrawRewardModal, setOpenWithdrawRewardModal] = useState(false);
-
+  const nullAddr = connectorWalletAddress ? connectorWalletAddress : "GBE3GK4YPHHD6P45GSM46C6YBKWM5GLAVOEEGKUXSAZIA7W3KS4RCDSC"
   const readContractFnCall = async (
     functName: string,
     args: any[] = [],
     contractAddr: string
   ) => {
     const txBuilder = await getTxBuilder(
-      connectorWalletAddress!,
+      nullAddr,
       BASE_FEE,
       provider,
       selectedNetwork.networkPassphrase
@@ -97,99 +97,13 @@ const FarmPage = () => {
       contractAddr,
       txBuilder,
       provider,
-      connectorWalletAddress,
+      nullAddr,
       functName,
       args
     );
-    console.log({ [functName]: result });
+    // console.log({ [functName]: result });
     return result;
   };
-  // console.log({withdrawalEnabled})
-  useEffect(() => {
-    if (connectorWalletAddress) {
-      // readContractFnCall("get_pool_info", [numberToSCVU32(0)]);
-      // readContractFnCall("get_user_info", [accountToScVal(connectorWalletAddress) , numberToSCVU32(0)], '');
-      // readContractFnCall("get_global_allocated_rewards");
-    }
-  });
-
-  // const signWithFreighter = async () => {
-  //   setIsSubmitting(true);
-
-  //   const txBuilderAdmin = await getTxBuilder(
-  //     connectorWalletAddress,
-  //     xlmToStroop(fee).toString(),
-  //     provider,
-  //     selectedNetwork.networkPassphrase
-  //   );
-  //   const xdr = await mintTokens({
-  //     tokenId: contractAddress,
-  //     quantity: ethers.parseUnits(depositAmount, selectedPool?.tokenDecimals).toString(),
-  //     destinationPubKey: connectorWalletAddress,
-  //     memo,
-  //     txBuilderAdmin,
-  //     server: provider,
-  //   });
-
-  //   try {
-  //     // Signs XDR representing the "mint" transaction
-  //     const signedTx = await signTx(xdr, connectorWalletAddress, kit);
-  //     setIsSubmitting(false);
-  //     setSignedXdr(signedTx);
-  //   } catch (e) {
-  //     setIsSubmitting(false);
-  //     setConnectionError(ERRORS.UNABLE_TO_SIGN_TX);
-  //   }
-  // };
-
-  //Finally submit Deposit transaction
-  // const submit = async () => {
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     const result = await submitTx(
-  //       signedXdr,
-  //       selectedNetwork.networkPassphrase,
-  //       provider
-  //     );
-
-  //     setTxResultXDR(result);
-  //     setTransactionsStatus({deposit: true})
-  //     setIsSubmitting(false);
-  //     setStep(2)
-  //   } catch (error) {
-  //     console.log(error);
-  //     setIsSubmitting(false);
-  //     setConnectionError(ERRORS.UNABLE_TO_SUBMIT_TX);
-  //   }
-  // };
-
-  //   useEffect(() => {
-  //     const updatedPool = async () => {
-  //       if(pool){
-  //         const updatedPools = await Promise.all(pools.map(async (pool: any, index: number) => {
-  //           const reserves = await getPoolReserve(index)
-  //           const shareBalance = connectorWalletAddress && await getShareBalance(index)
-  //           const maturityDate:string = await readContract("maturity", index)
-
-  //           // console.log({[`${index}-maturityDate`]: dateFormat(maturityDate)})
-  //           const now = BigInt(Math.floor(Date.now() / 1000))
-  //           return {
-  //             ...pool,
-  //             reserves,
-  //             shareBalance,
-  //             maturityTimeStamp: maturityDate,
-  //             expiration: dateFormat(maturityDate),
-  //             position: Number(shareBalance) * 100,
-  //             depositEnabled: BigInt(maturityDate) > now
-  //           }
-  //         }))
-  //         setPools(updatedPools)
-  //         setLoadPool(true)
-  //       }
-  //     }
-  //     updatedPool()
-  // }, [connectorWalletAddress,  transactionsStatus?.deposit, transactionsStatus])
   const getShareCont = async (
     id: string,
     txBuilder: TransactionBuilder,
@@ -237,81 +151,117 @@ const FarmPage = () => {
       if (farms) {
         const updatedFarm = await Promise.all(
           farms.map(async (farmPool: any, index: number) => {
-            // const reserves = await getPoolReserve(index)
-            const shareBalance =
-              connectorWalletAddress && (await getShareBalance(index));
-            const maturityDate: string = await readContractFnCall(
-              "get_maturity_date",
-              [],
-              farms[index].contractAddress
-            );
-            const rewardAddresses: string[] = await readContractFnCall(
-              "get_reward_token_addresses",
-              [],
-              farms[index].contractAddress
-            );
-            const getUserInfo: string[] = await readContractFnCall(
-              "get_user_info",
-              [accountToScVal(connectorWalletAddress), numberToSCVU32(0)],
-              farms[index].contractAddress
-            );
+            try {
+              // const reserves = await getPoolReserve(index)
+              const shareBalance =
+                connectorWalletAddress && (await getShareBalance(index));
+              const maturityDate: string = await readContractFnCall(
+                "get_maturity_date",
+                [],
+                farms[index].contractAddress
+              );
+              const rewardAddresses: string[] = await readContractFnCall(
+                "get_reward_token_addresses",
+                [],
+                farms[index].contractAddress
+              );
+  
+              let getUserInfo: any = [];
+              try {
+                getUserInfo = await readContractFnCall(
+                  "get_user_info",
+                  [accountToScVal(connectorWalletAddress), numberToSCVU32(0)],
+                  farms[index].contractAddress
+                );
+              } catch (error) {
+                console.warn(`Skipping pool ${index} due to missing user info.`);
+                // Optionally log the error or handle specific cases here
+              }
+  
+              // console.log({
+              //   [`Farm timestamp - ${index}`]: [
+              //     maturityDate,
+              //     farms[index].contractAddress,
+              //   ],
+              // });
 
-            // console.log({ [`FARM POOL USER INFO -> ${index}`]: getUserInfo });
-            console.log({
-              [`Farm timestamp - ${index}`]: [
-                maturityDate,
-                farms[index].contractAddress,
-              ],
-            });
-            // Fetch the symbol for each reward address
-            const rewardTokens = await Promise.all(
-              rewardAddresses?.map(
-                async (address: string, addrIndex: number) => {
-                  const symbol = await readContractFnCall(
-                    "symbol",
-                    [],
-                    address
-                  );
-                  const balance = await readContractFnCall(
-                    "balance",
-                    [accountToScVal(connectorWalletAddress)],
-                    address
-                  );
-                  return { address, balance, symbol };
-                }
-              )
-            );
+              const bondSymbol = connectorWalletAddress &&   await readContractFnCall(
+                "symbol",
+                [],
+                farms[index].shareId
+              );
+              // Fetch the symbol for each reward address
+              const rewardTokens = connectorWalletAddress &&  await Promise.all(
+                rewardAddresses?.map(
+                  async (address: string, addrIndex: number) => {
+                    const symbol = await readContractFnCall(
+                      "symbol",
+                      [],
+                      address
+                    );
+                    const balance = await readContractFnCall(
+                      "balance",
+                      [accountToScVal(connectorWalletAddress)],
+                      address
+                    );
+                    return { address, balance, symbol };
+                  }
+                )
+              );
+  
+              const now = BigInt(Math.floor(Date.now() / 1000));
+              const farmInfo = await readContractFnCall(
+                "get_pool_info",
+                [numberToSCVU32(0)],
+                farms[index].contractAddress
+              );
+              
+              const priceOfUSDT = 1
 
-            const now = BigInt(Math.floor(Date.now() / 1000));
-            const farmInfo = await readContractFnCall(
-              "get_pool_info",
-              [numberToSCVU32(0)],
-              farms[index].contractAddress
-            );
-            return {
-              ...farmPool,
-              farmInfo,
-              rewardTokens,
-              getUserInfo,
-              // reserves,
-              bondBalance: shareBalance,
-              maturityTimeStamp: maturityDate,
-              expiration: dateFormat(maturityDate),
-              // position: Number(shareBalance) * 100,
-              farmEnabled: BigInt(maturityDate) > now,
-            };
+              const decimals = 7
+
+              const rewardRatioSum = Number(farmInfo?.reward_ratio1) + Number(farmInfo?.reward_ratio2)
+
+              const farmAPR = ((rewardRatioSum * priceOfUSDT * 60*60*24*365)/10**(decimals))
+
+
+              // console.log({[`farm-pool-${index}`]: farmInfo, farmAPR: farmAPR.toPrecision(7), rewardRatioSum})
+              return {
+                ...farmPool,
+                bondSymbol,
+                farmInfo,
+                rewardTokens: rewardTokens ? rewardTokens : [],
+                getUserInfo: getUserInfo ? getUserInfo : null,
+                bondBalance: shareBalance ? shareBalance : 0,
+                maturityTimeStamp: maturityDate,
+                expiration: dateFormat(maturityDate),
+                farmEnabled: BigInt(maturityDate) > now,
+                farmAPR: farmAPR.toFixed(2),
+                accruedRewardOne: getUserInfo.accrued_rewards1 ,
+                accruedRewardTwo: getUserInfo.accrued_rewards2,
+                accruedRewardTotal: getUserInfo && getUserInfo?.accrued_rewards1
+                ? floatFigure(Number(ethers.formatUnits(getUserInfo.accrued_rewards1 + getUserInfo.accrued_rewards2, 7)), 7) 
+                : 0
+              };
+            } catch (error) {
+              console.error(`Error processing pool ${index}:`, error);
+              // Return the farmPool unmodified if there's an error
+              return farmPool;
+            }
           })
         );
-        setAllFarms(updatedFarm);
-        // setLoadPool(true)
+        const sortedFarms = updatedFarm.sort((a, b) => b.bondBalance - a.bondBalance)
+        setAllFarms(sortedFarms);
+  // console.log({[`farm-`]: updatedFarm[0]})
+
       }
     };
-
-    if (connectorWalletAddress) {
+  
+    if (nullAddr) {
       updatedFarms();
     }
-  }, [connectorWalletAddress, transactionsStatus?.deposit, transactionsStatus]);
-
+  }, [connectorWalletAddress,transactionsStatus?.deposit, transactionsStatus, nullAddr]);
+  
   const handleFarmDeposit = (farm: any) => {
     setOpenFarmModal(true);
     setSelectedFarmPool(farm);
@@ -327,7 +277,6 @@ const FarmPage = () => {
     setSelectedFarmPool(farm);
   };
 
-  console.log({ allFarms });
   const userPositions = () => {
     const depositedFarm = allFarms.filter(
       (farm: any) => farm?.getUserInfo?.deposited > 0
@@ -337,7 +286,7 @@ const FarmPage = () => {
         Number(b.getUserInfo?.deposited) - Number(a.getUserInfo?.deposited)
     );
     setUserFarmPositions(sortedPositions);
-    console.log({ sortedPositions });
+    // console.log({ sortedPositions });
   };
 
   useEffect(() => {
@@ -355,38 +304,6 @@ const FarmPage = () => {
       return newToggleArr;
     });
   };
-
-  const sumAccruedRewards = (farm: any) => {
-    const accrued_rewards1 = farm?.getUserInfo.accrued_rewards1
-    const accrued_rewards2 = farm?.getUserInfo.accrued_rewards2
-
-    const sumRewards = accrued_rewards1 + accrued_rewards2
-
-    return floatFigure(
-      Number(
-        ethers.formatUnits(
-          sumRewards,
-          7
-        )
-      ),
-      2
-    )
-  }
-  // const handleGetInfo = async () => {
-  //   try {
-  //     const getUserInfo: string[] = await readContractFnCall(
-  //       "get_user_info",
-  //       [accountToScVal(connectorWalletAddress), numberToSCVU32(0)],
-  //       "CCLQZHAB3JMGOVB54JSWMLG6JLGJZE4LIHCYSJGMODJYUIUJBR4O2SHM"
-  //     );
-  //     console.log({ ETHDEC: getUserInfo });
-  //     return getUserInfo;
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // handleGetInfo();
   return (
     <>
       <div className="dapp h-screen">
@@ -447,7 +364,7 @@ const FarmPage = () => {
                           <h2 className="text-white md:text-sm text-md mb-1">
                             {farm.name} Available for farming
                           </h2>
-                          <div className="text-gray-400 text-lg max-md:text-xl brFirma_font mb-3 max-md:mt-3 max-md:mb-5">
+                          <div className="text-gray-400 text-lg max-md:text-xl brFirma_font mb-3 max-md:mt-3 max-md:mb-5 flex items-center">
                             <p>
                               <span className="text-white font-semibold">
                                 {farm?.bondBalance ? (
@@ -456,12 +373,15 @@ const FarmPage = () => {
                                   <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>
                                 )}
                               </span>
-                              <span className="text-blueish text-sm font-normal ml-2">
-                                Bonds
+                              <span className="text-blueish text-sm font-normal ml-2 uppercase">
+                                {farm?.bondSymbol}
                               </span>
                             </p>
+                            <p className="text-sm ml-1 mt-1">bonds</p>
                           </div>
+                          <Link href={"/app"} target="_blank">
                           <h2 className="text-blueish text-sm ">Get More</h2>
+                          </Link>
                         </div>
                       </div>
                     ) : (
@@ -489,17 +409,18 @@ const FarmPage = () => {
 
                   <div className="get_LP_tokens flex items-center gap-3 w-1/2 max-md:w-full px-5 py-3 justify-between max-md:my-7 max-md:pt-7 ">
                     <div className="rewards text-gray-400 text-md">
-                      <h2 className="text-md mb-2 max-sm:text-sm">
+                      {/* <h2 className="text-md mb-2 max-sm:text-sm">
                         Rewards :bhUSD
-                      </h2>
+                      </h2> */}
                       <p className="text-md max-sm:text-sm mb-2 ">Farm APR</p>
                       <p className="text-md max-sm:text-sm">Maturity</p>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-10 ">
                       <div className="APY text-blueish  w-5/12 brFirma_font">
-                        <h1 className="text-md">12.65%</h1>
-                        <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px] my-3">
+                      {
+                        farm?.farmAPR ? (
+                          <div className="time_tag flex items-center justify-center gap-1 py-[3px] px-[5px] w-[150px] my-3">
                           <Image
                             src={ApyArrowIcon}
                             width={14}
@@ -508,14 +429,18 @@ const FarmPage = () => {
                             className=""
                           />{" "}
                           <p className="text-[13px]  text-[#A586FE]">
-                            2.1% vs. last month
+                          {farm?.farmAPR}%
                           </p>
                         </div>
-                        <h1 className="text-md">
+                        ): (
+                          <div className="w-[150px] mb-2 skeleton py-3 animate-puls shadow-md"></div>
+                        )
+                      }
+                        <h1 className="text-md w-[150px] text-center  ">
                           {farm.expiration ? (
                             farm.expiration
                           ) : (
-                            <div className="w-[60px] skeleton py-3 animate-puls shadow-md"></div>
+                            <div className="w-[150px] skeleton py-3 animate-puls shadow-md"></div>
                           )}
                         </h1>
                       </div>
@@ -533,7 +458,8 @@ const FarmPage = () => {
                         </button>
                       ) : (
                         <Link href={"/app"} target="_blank">
-                          <button className="button2 px-5 py-1 text-[12px] max-md:hidden">
+                          <button className="button2 px-5 py-1 text-[12px] max-md:hidden"
+                                              disabled={!connectorWalletAddress}>
                             Get LP tokens
                           </button>
                         </Link>
@@ -585,7 +511,7 @@ const FarmPage = () => {
 
                       <div className="get_LP_tokens flex items-center gap-3 max-md:w-full py-3 justify-between max-md:my-7 max-md:pt-7 ">
                         <div className="flex flex-wrap items-center justify-between gap-10 ">
-                          <div className="APY text-blueish  w-5/12 brFirma_font">
+                          <div className="APY text-blueish  w-5/12 brFirma_font flex items-center">
                             <p>
                               <span className="text-blueish text-sm font-normal mr-2">
                                 Deposited
@@ -598,11 +524,12 @@ const FarmPage = () => {
                                   )
                                 )}
                               </span>
-                              <span className="text-blueish text-sm font-normal ml-2">
-                                BONDS
+                              <span className="text-blueish text-sm font-normal ml-2 uppercase">
+                                {farm?.bondSymbol}
                               </span>
                             </p>
-                            <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px] my-1">
+                            <p className="text-sm ml-1 text-gray-400 ">bonds</p>
+                            {/* <div className="time_tag flex items-center gap-1 py-[3px] px-[5px] w-[150px] my-1">
                               <Image
                                 src={ApyArrowIcon}
                                 width={14}
@@ -613,7 +540,7 @@ const FarmPage = () => {
                               <p className="text-[13px]  text-[#A586FE]">
                                 2.1% vs. last month
                               </p>
-                            </div>
+                            </div> */}
                           </div>
                           <motion.button
                             className="farmToggleBtn w-8 h-8 text-[12px] max-md:hidden"
@@ -653,6 +580,7 @@ const FarmPage = () => {
                           <button
                             className="button1 px-10 py-2 text-[12px] max-md:w-full max-md:py-4"
                             onClick={() => handleFarmWithdraw(farm)}
+                            disabled={!connectorWalletAddress}
                           >
                             Remove From Farm
                           </button>
@@ -660,6 +588,7 @@ const FarmPage = () => {
                           <button
                             className="button1 px-10 py-2 text-[12px] max-md:w-full max-md:py-4 ml-2"
                             onClick={() => handleWithdrawRewards(farm)}
+                            disabled={!connectorWalletAddress}
                           >
                             Withdraw Rewards Only
                           </button>
@@ -684,13 +613,12 @@ const FarmPage = () => {
                               {floatFigure(
                                 Number(
                                   ethers.formatUnits(
-                                    farm?.getUserInfo.accrued_rewards1,
+                                    farm?.accruedRewardOne,
                                     7
                                   )
                                 ),
-                                2
+                                7
                               )}{" "}
-                              USDT
                             </p>
                           </div>
                           <div className="usdtProvided flex justify-between text-gray-400 text-md ">
@@ -701,24 +629,22 @@ const FarmPage = () => {
                               {floatFigure(
                                 Number(
                                   ethers.formatUnits(
-                                    farm?.getUserInfo.accrued_rewards2,
+                                    farm?.accruedRewardTwo,
                                     7
                                   )
                                 ),
-                                2
+                                7
                               )}{" "}
-                              USDT
                             </p>
                           </div>
 
                           {/* ACCRUED ONE & TWO */}
                           <div className="usdtProvided flex justify-between text-gray-400 text-md ">
                             <h2 className="text-md mb-2 max-sm:text-sm">
-                              Accrued Rewards (USDT)
+                              Accrued Rewards Total ({farm?.rewardTokens[0]?.symbol})
                             </h2>
                             <p className="text-md max-sm:text-sm mb-2 ">
-                              {sumAccruedRewards(farm)}
-                              USDT
+                              {farm?.accruedRewardTotal}
                             </p>
                           </div>
                         </div>
